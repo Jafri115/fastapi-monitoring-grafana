@@ -1,0 +1,54 @@
+version: '3.8'
+
+services:
+  fastapi_app:
+    build: .
+    container_name: fastapi_service
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./app:/app
+    environment:
+      - PYTHONUNBUFFERED=1
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s  # Increased from 5s to 15s
+
+  prometheus:
+    image: prom/prometheus:v2.47.0 # Use a specific version
+    container_name: prometheus_service
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+    restart: unless-stopped
+    depends_on:
+      fastapi_app:
+        condition: service_healthy # Wait for FastAPI app to be healthy
+
+  grafana:
+    image: grafana/grafana:10.4.1 # Use a specific version
+    container_name: grafana_service
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana_data:/var/lib/grafana # Persistent storage for Grafana data
+      - ./grafana/provisioning/datasources:/etc/grafana/provisioning/datasources
+      - ./grafana/provisioning/dashboards:/etc/grafana/provisioning/dashboards
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin # Change in production!
+      - GF_AUTH_ANONYMOUS_ENABLED=true   # Optional: allow anonymous access for viewing
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Viewer # Optional: role for anonymous users
+    restart: unless-stopped
+    depends_on:
+      - prometheus
+
+volumes:
+  grafana_data: {} # Defines a named volume for Grafana persistence

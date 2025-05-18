@@ -1,0 +1,4 @@
+fastapi
+uvicorn[standard]
+prometheus-fastapi-instrumentator
+aiosqlite # For a simple async DB example
