@@ -14,7 +14,7 @@ Grafana Dashboard with few visualizations
 This project provides:
 *   A simple FastAPI application instrumented for Prometheus.
 *   A Prometheus instance to scrape metrics.
-*   A Grafana instance with a pre-configured dashboard to visualize API metrics like request rate, latency, and errors.
+*   A Grafana instance with a pre-configured dashboard to visualize API metrics like request rate, latency, and errors rate.
 
 ## Prerequisites
 
